@@ -10,11 +10,18 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Finances">
+        android:theme="@style/Theme.Finances"
+        >
+
+        <receiver
+            android:name=".NotificationReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
         <activity
             android:name=".SplashScreenActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,32 +31,40 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:launchMode="singleTop"> <!-- основная -->
+            > <!-- основная -->
         </activity>
         <activity
             android:name=".toolbar.SettingsActivity"
             android:label="@string/title_activity_settings"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".toolbar.About">
+        <activity android:name=".toolbar.About"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".course.CourseName"
-            android:theme="@style/EnterTheme">
+            android:theme="@style/EnterTheme"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity android:name=".course.CourseLength"
-            android:theme="@style/EnterTheme">
+            android:theme="@style/EnterTheme"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
