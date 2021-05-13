@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
@@ -68,7 +69,7 @@ public class AccountFragment extends Fragment {
     private View view;
     private Activity activityAccount;
     public ByteArrayOutputStream bos;
-    public final String FilePath = "/data/data/com.example.finances/files/ProfileFoto";
+    public String FilePath ="";
 
 
 
@@ -77,8 +78,12 @@ public class AccountFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_account, container, false);
         ImageButton PhotoButton = view.findViewById(R.id.FirstPhotoButton);
 
-
+        //Получаем activity
         activityAccount = getActivity();
+
+        //получаем путь к изображению
+        SharedPreferences accountPhoto = getActivity().getSharedPreferences(APP_PREFERENCES_Path, Context.MODE_PRIVATE);
+        FilePath= accountPhoto.getString("key1", "");
 
         //устанавливаем никнейм
         SharedPreferences accNickname = PreferenceManager.getDefaultSharedPreferences(this.getContext());
@@ -112,11 +117,11 @@ public class AccountFragment extends Fragment {
         //устанавливаю строку из SharedPreferences
         //  TextView check = view.findViewById(R.id.tryText);
         Bitmap bitmap = null;
-        File f = new File(FilePath);
-        if(f.isFile()) {
+        File ff = new File(FilePath);
+        if(ff.isFile()) {
     try{
     CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
-    profileImage.setImageBitmap( loadPicture("/data/data/com.example.finances/files/ProfileFoto", bitmap));}
+    profileImage.setImageBitmap( loadPicture(FilePath, bitmap));}
     catch (Exception e){
         e.printStackTrace();
     }
@@ -148,13 +153,12 @@ public class AccountFragment extends Fragment {
             View a = getView();
             CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.ProfileImage);
             Uri selectedImageUri = data.getData();
-            imagePath = getRealPathFromURI(selectedImageUri);
             Context c = getContext();
             Bitmap bitmap;
             //Сохраняем изображение в файл
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImageUri);
-                savePicture("ProfileFoto", bitmap, c);
+                new fileFromBitmap("ProfileFoto", bitmap, c).execute();
                 //устанавливаем изображение
                 profileImage.setImageBitmap(bitmap);
 
@@ -166,54 +170,7 @@ public class AccountFragment extends Fragment {
 
         }
     }
-
-    private String getRealPathFromURI(Uri contentUri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
-        CursorLoader loader = new CursorLoader(getContext(), contentUri, proj, null, null, null);
-        Cursor cursor = loader.loadInBackground();
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        String result = cursor.getString(column_index);
-        cursor.close();
-        return result;
-    }
-
-    private void savePicture(String fileNameToSave,Bitmap bitmap,Context context ) { // File name like "image.png"
-
-        //create a file to write bitmap data
-        File f = new File(context.getFilesDir(), fileNameToSave);
-        try {
-            f.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Snackbar saveFileSnackbar  = Snackbar.make(view,"Error: photo saving failed", BaseTransientBottomBar.LENGTH_SHORT);
-            saveFileSnackbar.show();
-        }
-
-        try {
-//Convert bitmap to byte array
-            bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 1 , bos); // YOU can also save it in JPEG
-            byte[] bitmapdata = bos.toByteArray();
-
-//write the bytes in file
-            FileOutputStream fos = new FileOutputStream(f);
-           fos.write(bitmapdata);
-           fos.flush();
-           fos.close();
-
-            Snackbar saveFileSnackbar  = Snackbar.make(view,"Photo is saved", BaseTransientBottomBar.LENGTH_SHORT);
-            saveFileSnackbar.show();
-        }catch (Exception e){
-            e.printStackTrace();
-            Snackbar saveFileSnackbar  = Snackbar.make(view,"Error: photo saving failed", BaseTransientBottomBar.LENGTH_SHORT);
-            saveFileSnackbar.show();
-        }
-    }
-
-
-
-
+    
     private Bitmap loadPicture(String filepath, Bitmap b) {
         // Drawable myImage = null;
         try {
@@ -225,4 +182,68 @@ public class AccountFragment extends Fragment {
         }
         return b ;
  }
+
+
+    File f;
+    public class fileFromBitmap extends AsyncTask<Void, Integer, String> {
+
+        Context context;
+        Bitmap bitmap;
+        String fileNameToSave;
+
+        public fileFromBitmap(String fileNameToSave,Bitmap bitmap,Context context) {
+            this.bitmap = bitmap;
+            this.context= context;
+            this.fileNameToSave = fileNameToSave;
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // before executing doInBackground
+            // update your UI
+            // exp; make progressbar visible
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            f = new File(context.getFilesDir(), fileNameToSave);
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                //Convert bitmap to byte array
+                bos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 1 , bos); // YOU can also save it in JPEG
+                byte[] bitmapdata = bos.toByteArray();
+
+                //write the bytes in file
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+                FilePath = f.getPath();
+                profile = getActivity().getSharedPreferences(APP_PREFERENCES_Path,Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = profile.edit();
+                editor.putString("key1", String.valueOf(FilePath)).apply();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            // back to main thread after finishing doInBackground
+            // update your UI or take action after
+            // exp; make progressbar gone
+        }
+    }
 }
