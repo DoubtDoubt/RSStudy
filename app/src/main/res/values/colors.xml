@@ -12,4 +12,6 @@
     <color name="gray_dove_light">#5E5E5E</color>
     <color name="enterpurple">#FFFFFF</color>
     <color name="button_course">@color/purple_200</color>
+    <color name="ErrorText">#CF2121</color>
+
 </resources>

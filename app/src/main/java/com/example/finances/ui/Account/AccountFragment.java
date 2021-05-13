@@ -1,16 +1,20 @@
-
 package com.example.finances.ui.Account;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,14 +32,25 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.loader.content.CursorLoader;
 import androidx.preference.PreferenceManager;
 
 import com.example.finances.R;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.net.URI;
 import java.util.ResourceBundle;
 
@@ -48,14 +63,22 @@ public class AccountFragment extends Fragment {
     public static final String APP_PREFERENCES_Path = "Nickname" ;
     private final int GALLERY_REQUEST = 1;
     public SharedPreferences profile;
-
+    private String imagePath;
+    private final int PICK_IMAGE_REQUEST = 1;
+    private View view;
+    private Activity activityAccount;
+    public ByteArrayOutputStream bos;
+    public final String FilePath = "/data/data/com.example.finances/files/ProfileFoto";
 
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_account, container, false);
+        view = inflater.inflate(R.layout.fragment_account, container, false);
         ImageButton PhotoButton = view.findViewById(R.id.FirstPhotoButton);
+
+
+        activityAccount = getActivity();
 
         //устанавливаем никнейм
         SharedPreferences accNickname = PreferenceManager.getDefaultSharedPreferences(this.getContext());
@@ -71,7 +94,7 @@ public class AccountFragment extends Fragment {
         TextView Email = view.findViewById(R.id.email);
         Email.setText(email);
         if(email.isEmpty()){
-           Email.setText("Not indicated");
+            Email.setText("Not indicated");
         }
 
         //устанавливаем место учебы
@@ -86,36 +109,22 @@ public class AccountFragment extends Fragment {
 
 
 
-
-
-
         //устанавливаю строку из SharedPreferences
-      //  TextView check = view.findViewById(R.id.tryText);
-        SharedPreferences accountPhoto = getActivity().getSharedPreferences(APP_PREFERENCES_Path, Context.MODE_PRIVATE);
-        String s = accountPhoto.getString("key1", "");
+        //  TextView check = view.findViewById(R.id.tryText);
+        Bitmap bitmap = null;
+        File f = new File(FilePath);
+        if(f.isFile()) {
+    try{
+    CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
+    profileImage.setImageBitmap( loadPicture("/data/data/com.example.finances/files/ProfileFoto", bitmap));}
+    catch (Exception e){
+        e.printStackTrace();
+    }
+}
 
-        if(!s.trim().isEmpty() && s != null) {
-            try{
 
 
 
-            //check.setText(s);
-            CircleImageView profileImage =  view.findViewById(R.id.imageView); //находим изображение на layout
-            Uri imageUri = Uri.parse(s); //преобазую строку в адрес
-            Bitmap bitmap = null;
-
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(),imageUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(bitmap != null) {
-                profileImage.setImageBitmap(bitmap); // устанавливаем изображение
-            }}
-            catch (Exception E){
-
-            }
-        }
 
 
         //кнопка выбора изображения
@@ -132,34 +141,88 @@ public class AccountFragment extends Fragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-        Bitmap bitmap = null;
-        View a = getView();
-        CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.imageView);
-        switch(requestCode) {
-            case GALLERY_REQUEST:
-                if(resultCode == RESULT_OK){
-                    Uri selectedImage = imageReturnedIntent.getData();
-                    try {
+            View a = getView();
+            CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.ProfileImage);
+            Uri selectedImageUri = data.getData();
+            imagePath = getRealPathFromURI(selectedImageUri);
+            Context c = getContext();
+            Bitmap bitmap;
+            //Сохраняем изображение в файл
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImageUri);
+                savePicture("ProfileFoto", bitmap, c);
+                //устанавливаем изображение
+                profileImage.setImageBitmap(bitmap);
 
-                        bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImage);
-                        // Теперь сохраняем ссылку на файл
-                        profile = getActivity().getSharedPreferences(APP_PREFERENCES_Path,Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = profile.edit();
-                        editor.putString("key1", String.valueOf(selectedImage)).apply();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    profileImage.setImageBitmap(bitmap);
-                }
+
+        }
+    }
+
+    private String getRealPathFromURI(Uri contentUri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        CursorLoader loader = new CursorLoader(getContext(), contentUri, proj, null, null, null);
+        Cursor cursor = loader.loadInBackground();
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String result = cursor.getString(column_index);
+        cursor.close();
+        return result;
+    }
+
+    private void savePicture(String fileNameToSave,Bitmap bitmap,Context context ) { // File name like "image.png"
+
+        //create a file to write bitmap data
+        File f = new File(context.getFilesDir(), fileNameToSave);
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Snackbar saveFileSnackbar  = Snackbar.make(view,"Error: photo saving failed", BaseTransientBottomBar.LENGTH_SHORT);
+            saveFileSnackbar.show();
         }
 
+        try {
+//Convert bitmap to byte array
+            bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 1 , bos); // YOU can also save it in JPEG
+            byte[] bitmapdata = bos.toByteArray();
+
+//write the bytes in file
+            FileOutputStream fos = new FileOutputStream(f);
+           fos.write(bitmapdata);
+           fos.flush();
+           fos.close();
+
+            Snackbar saveFileSnackbar  = Snackbar.make(view,"Photo is saved", BaseTransientBottomBar.LENGTH_SHORT);
+            saveFileSnackbar.show();
+        }catch (Exception e){
+            e.printStackTrace();
+            Snackbar saveFileSnackbar  = Snackbar.make(view,"Error: photo saving failed", BaseTransientBottomBar.LENGTH_SHORT);
+            saveFileSnackbar.show();
+        }
     }
 
 
 
+
+    private Bitmap loadPicture(String filepath, Bitmap b) {
+        // Drawable myImage = null;
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            b = BitmapFactory.decodeFile(filepath, options);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return b ;
+ }
 }

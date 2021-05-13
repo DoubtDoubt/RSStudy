@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
     private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA = 1;
+    private static final int MY_PERMISSIONS_WRITE_REQUEST = 1;
 
 
     @SuppressLint({"WrongViewCast", "WrongConstant"})
@@ -56,9 +57,15 @@ public class MainActivity extends AppCompatActivity  {
         myAlarm();
 
 
+
+        int writePermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if ((writePermissionCheck != PackageManager.PERMISSION_GRANTED))  {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_WRITE_REQUEST); }
+
         //Проверка доступа к хранилищу
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+        int readPermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (readPermissionCheck != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_READ_MEDIA); }
         else {
@@ -88,6 +95,7 @@ public class MainActivity extends AppCompatActivity  {
         }
 
     }
+
 
 
 
@@ -126,7 +134,8 @@ public class MainActivity extends AppCompatActivity  {
 
 
     @Override public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) { case MY_PERMISSIONS_REQUEST_READ_MEDIA:
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_MEDIA:
             if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 readDataExternal(); }
             break;

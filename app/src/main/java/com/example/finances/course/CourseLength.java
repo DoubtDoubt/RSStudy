@@ -1,26 +1,22 @@
 package com.example.finances.course;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.example.finances.MainActivity;
 import com.example.finances.R;
-import com.example.finances.ui.Home.HomeFragment;
-import com.example.finances.NotificationChannel;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import maes.tech.intentanim.CustomIntent;
 
@@ -41,16 +37,34 @@ public class CourseLength extends AppCompatActivity {
         setContentView(R.layout.activity_course_length);
 
 
+        final EditText contentEditText = findViewById(R.id.editTextLength);
 
         next = findViewById(R.id.buttonNext1);
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                String fileLengthName = "LENTGH_COURSE";
+                String content = contentEditText.getText().toString();
+                FileOutputStream fos;
 
+                try {
+                    fos = openFileOutput(fileLengthName, Context.MODE_PRIVATE); // открываем файл для записи
+                    fos.write(content.getBytes()); // записываем данные
+                    fos.close(); // закрываем файл
 
+                    // выводим сообщение
+                    Toast.makeText(getApplicationContext(),
+                            "Файл " + fileLengthName + " сохранён", Toast.LENGTH_LONG).show();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
+
 
         close = findViewById(R.id.closeButton1);
         close.setOnClickListener(new View.OnClickListener() {

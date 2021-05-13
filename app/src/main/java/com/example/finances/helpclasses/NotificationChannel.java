@@ -1,4 +1,4 @@
-package com.example.finances;
+package com.example.finances.helpclasses;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -13,7 +13,7 @@ public static class createNotification{
    public static void createNotificationChannel(String Chn, Context s) {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-        int importance = NotificationManager.IMPORTANCE_HIGH;
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
         android.app.NotificationChannel channel = new android.app.NotificationChannel(Chn,"My notification", importance);
         channel.setDescription("Attempt 1");
         // Register the channel with the system; you can't change the importance

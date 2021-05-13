@@ -50,10 +50,11 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.squareup.picasso:picasso:2.5.2' //picasso библиотека
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0' //MPAndroid диаграммы
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3' //MotionLayout (Анимированные списки)
     implementation 'de.hdodenhof:circleimageview:3.1.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version" //kotlin extra library
     implementation 'androidx.preference:preference:1.1.1'//Круглая фотография
     implementation 'com.github.hajiyevelnur92:intentanimation:1.0' //анимация интент
     testImplementation 'junit:junit:4.+'
