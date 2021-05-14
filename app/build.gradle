@@ -50,6 +50,8 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.12.0' // Glide(работа с изображениями)
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'//вспомогательная штука для Glide
     implementation 'com.squareup.picasso:picasso:2.5.2' //picasso библиотека
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0' //MPAndroid диаграммы
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3' //MotionLayout (Анимированные списки)

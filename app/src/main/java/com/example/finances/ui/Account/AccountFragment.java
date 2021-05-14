@@ -11,6 +11,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,6 +38,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.content.CursorLoader;
 import androidx.preference.PreferenceManager;
 
+import com.bumptech.glide.Glide;
 import com.example.finances.R;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -119,13 +122,15 @@ public class AccountFragment extends Fragment {
         Bitmap bitmap = null;
         File ff = new File(FilePath);
         if(ff.isFile()) {
-    try{
-    CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
-    profileImage.setImageBitmap( loadPicture(FilePath, bitmap));}
-    catch (Exception e){
-        e.printStackTrace();
-    }
-}
+            try{
+                CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
+                Glide.with(this)
+                        .load(loadPicture(FilePath, bitmap))
+                        .into(profileImage);}
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
 
 
@@ -154,23 +159,29 @@ public class AccountFragment extends Fragment {
             CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.ProfileImage);
             Uri selectedImageUri = data.getData();
             Context c = getContext();
-            Bitmap bitmap;
+            Bitmap bitmap = null;
+
+
             //Сохраняем изображение в файл
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImageUri);
                 new fileFromBitmap("ProfileFoto", bitmap, c).execute();
                 //устанавливаем изображение
-                profileImage.setImageBitmap(bitmap);
+
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+            Glide.with(getContext())
+                    .load(bitmap)
+                    .centerCrop()
+                    .into(profileImage);
 
 
         }
     }
-    
+
     private Bitmap loadPicture(String filepath, Bitmap b) {
         // Drawable myImage = null;
         try {
@@ -181,7 +192,7 @@ public class AccountFragment extends Fragment {
             e.printStackTrace();
         }
         return b ;
- }
+    }
 
 
     File f;
@@ -219,7 +230,7 @@ public class AccountFragment extends Fragment {
             try {
                 //Convert bitmap to byte array
                 bos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 1 , bos); // YOU can also save it in JPEG
+                bitmap.compress(Bitmap.CompressFormat.JPEG,10 , bos); // YOU can also save it in JPEG
                 byte[] bitmapdata = bos.toByteArray();
 
                 //write the bytes in file
