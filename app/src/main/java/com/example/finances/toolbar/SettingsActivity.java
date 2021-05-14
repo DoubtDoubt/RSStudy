@@ -7,6 +7,8 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.example.finances.MainActivity;
@@ -56,6 +58,7 @@ public class SettingsActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             CustomIntent.customType(this,"fadein-to-fadeout");
+            finish();
             return true;
         }
 

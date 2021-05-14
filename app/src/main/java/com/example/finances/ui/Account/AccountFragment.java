@@ -3,6 +3,7 @@ package com.example.finances.ui.Account;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -33,6 +35,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.content.CursorLoader;
@@ -40,6 +44,7 @@ import androidx.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
 import com.example.finances.R;
+import com.example.finances.helpclasses.MyDialogFragment;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
@@ -73,6 +78,8 @@ public class AccountFragment extends Fragment {
     private Activity activityAccount;
     public ByteArrayOutputStream bos;
     public String FilePath ="";
+    public ProgressBar simpleProgressBar;
+    public TextView progressText;
 
 
 
@@ -80,6 +87,11 @@ public class AccountFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_account, container, false);
         ImageButton PhotoButton = view.findViewById(R.id.FirstPhotoButton);
+
+
+        simpleProgressBar = view.findViewById(R.id.progressBar);
+        progressText = view.findViewById(R.id.progressText);
+
 
         //Получаем activity
         activityAccount = getActivity();
@@ -118,19 +130,17 @@ public class AccountFragment extends Fragment {
 
 
         //устанавливаю строку из SharedPreferences
-        //  TextView check = view.findViewById(R.id.tryText);
         Bitmap bitmap = null;
         File ff = new File(FilePath);
         if(ff.isFile()) {
             try{
                 CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
-                Glide.with(this)
-                        .load(loadPicture(FilePath, bitmap))
-                        .into(profileImage);}
+                profileImage.setImageBitmap( loadPicture(FilePath, bitmap));}
             catch (Exception e){
                 e.printStackTrace();
             }
         }
+
 
 
 
@@ -151,6 +161,17 @@ public class AccountFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        simpleProgressBar.setVisibility(View.INVISIBLE);
+    }
+
+
+
+
+
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
@@ -159,24 +180,18 @@ public class AccountFragment extends Fragment {
             CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.ProfileImage);
             Uri selectedImageUri = data.getData();
             Context c = getContext();
-            Bitmap bitmap = null;
-
-
+            Bitmap bitmap;
             //Сохраняем изображение в файл
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImageUri);
                 new fileFromBitmap("ProfileFoto", bitmap, c).execute();
                 //устанавливаем изображение
-
+                profileImage.setImageBitmap(bitmap);
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            Glide.with(getContext())
-                    .load(bitmap)
-                    .centerCrop()
-                    .into(profileImage);
 
 
         }
@@ -193,6 +208,10 @@ public class AccountFragment extends Fragment {
         }
         return b ;
     }
+
+
+
+
 
 
     File f;
@@ -217,6 +236,8 @@ public class AccountFragment extends Fragment {
             // exp; make progressbar visible
         }
 
+
+
         @Override
         protected String doInBackground(Void... params) {
 
@@ -227,10 +248,13 @@ public class AccountFragment extends Fragment {
                 e.printStackTrace();
             }
 
+
+            //text = view.findViewById(R.id.progressText);
+
             try {
                 //Convert bitmap to byte array
                 bos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG,10 , bos); // YOU can also save it in JPEG
+                bitmap.compress(Bitmap.CompressFormat.JPEG,25 , bos); // YOU can also save it in JPEG
                 byte[] bitmapdata = bos.toByteArray();
 
                 //write the bytes in file
@@ -245,6 +269,16 @@ public class AccountFragment extends Fragment {
             }catch (Exception e){
                 e.printStackTrace();
             }
+
+            for (int i = 0; i <= 101; i += 1) {
+                try {
+                    Thread.sleep(10);
+                    publishProgress(i);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            publishProgress(100);
             return null;
         }
 
@@ -255,6 +289,27 @@ public class AccountFragment extends Fragment {
             // back to main thread after finishing doInBackground
             // update your UI or take action after
             // exp; make progressbar gone
+
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            simpleProgressBar.setVisibility(View.INVISIBLE);
+            progressText.setVisibility(View.INVISIBLE);
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+
+            progressText.setVisibility(View.VISIBLE);
+            simpleProgressBar.setVisibility(View.VISIBLE);
+          simpleProgressBar.setProgress(values[0]);
+            progressText.setText("Выполнено : " + values[0] + "/100");
+
         }
     }
 }

@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity  {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 CustomIntent.customType(this,"fadein-to-fadeout");
+                finish();
 
             } catch (Exception E) {
 
