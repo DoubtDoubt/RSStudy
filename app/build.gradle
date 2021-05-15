@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.finances"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -56,6 +56,8 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0' //MPAndroid диаграммы
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3' //MotionLayout (Анимированные списки)
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+    implementation 'jp.wasabeef:picasso-transformations:2.1.0' //функции для picasso
+    implementation 'jp.co.cyberagent.android:gpuimage:2.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version" //kotlin extra library
     implementation 'androidx.preference:preference:1.1.1'//Круглая фотография
     implementation 'com.github.hajiyevelnur92:intentanimation:1.0' //анимация интент

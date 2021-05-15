@@ -1,69 +1,36 @@
 package com.example.finances.ui.Account;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.loader.content.CursorLoader;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.finances.R;
-import com.example.finances.helpclasses.MyDialogFragment;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
-import java.net.URI;
-import java.util.ResourceBundle;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import jp.wasabeef.picasso.transformations.CropSquareTransformation;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -134,8 +101,13 @@ public class AccountFragment extends Fragment {
         File ff = new File(FilePath);
         if(ff.isFile()) {
             try{
-                CircleImageView profileImage = (CircleImageView) view.findViewById(R.id.ProfileImage);
-                profileImage.setImageBitmap( loadPicture(FilePath, bitmap));}
+                ImageView profileImage =  view.findViewById(R.id.ProfileImage);
+                Context context = getContext();
+                Picasso.with(context)
+                        .load(new File(FilePath))
+                        .transform(new CropSquareTransformation())
+                        .into(profileImage);
+                }
             catch (Exception e){
                 e.printStackTrace();
             }
@@ -177,7 +149,7 @@ public class AccountFragment extends Fragment {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
             View a = getView();
-            CircleImageView profileImage = (CircleImageView) a.findViewById(R.id.ProfileImage);
+            ImageView profileImage = (ImageView) a.findViewById(R.id.ProfileImage);
             Uri selectedImageUri = data.getData();
             Context c = getContext();
             Bitmap bitmap;
@@ -186,7 +158,11 @@ public class AccountFragment extends Fragment {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImageUri);
                 new fileFromBitmap("ProfileFoto", bitmap, c).execute();
                 //устанавливаем изображение
-                profileImage.setImageBitmap(bitmap);
+
+                Picasso.with(c)
+                        .load(selectedImageUri)
+                        .transform(new CropSquareTransformation())
+                        .into(profileImage);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -270,7 +246,7 @@ public class AccountFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            for (int i = 0; i <= 101; i += 1) {
+            for (int i = 0; i <= 100; i += 1) {
                 try {
                     Thread.sleep(10);
                     publishProgress(i);
