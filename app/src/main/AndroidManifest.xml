@@ -19,6 +19,21 @@
             android:enabled="true"
             android:exported="true">
         </receiver>
+        <receiver
+            android:name=".AlarmRequestsReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+        <service
+            android:name=".JobSchedulerService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".AlarmJobIntentService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity
             android:name=".SplashScreenActivity"
             android:theme="@style/SplashTheme"

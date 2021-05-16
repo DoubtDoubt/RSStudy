@@ -4,9 +4,14 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +20,7 @@ import com.example.finances.toolbar.SettingsActivity;
 import com.example.finances.toolbar.About;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
@@ -38,6 +44,7 @@ public class MainActivity extends AppCompatActivity  {
     private static final int MY_PERMISSIONS_WRITE_REQUEST = 1;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint({"WrongViewCast", "WrongConstant"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +82,11 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public void myAlarm() {
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 11);
+        /*Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 21);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
@@ -90,10 +98,19 @@ public class MainActivity extends AppCompatActivity  {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
         if (alarmManager != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+            //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 30*1000, pendingIntent);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        }*/
 
-        }
+        Context appContext = getApplicationContext();
 
+        Intent IntentForBroadcast =
+                new Intent(appContext, AlarmRequestsReceiver.class);
+
+        IntentForBroadcast
+                .setAction(AlarmRequestsReceiver.ACTION_PERFORM_EXERCISE);
+
+        appContext.sendBroadcast(IntentForBroadcast);
     }
 
 
