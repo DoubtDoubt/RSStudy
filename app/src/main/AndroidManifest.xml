@@ -18,11 +18,17 @@
             android:name=".NotificationReceiver"
             android:enabled="true"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SEND_ALARM"/>
+            </intent-filter>
         </receiver>
         <receiver
             android:name=".AlarmRequestsReceiver"
             android:enabled="true"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_ALARM"/>
+            </intent-filter>
         </receiver>
         <service
             android:name=".JobSchedulerService"
